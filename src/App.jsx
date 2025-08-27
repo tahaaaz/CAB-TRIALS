@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { RideService } from './services/rideService';
 import RouteSelection from './components/RouteSelection';
 import ActionSelection from './components/ActionSelection';
 import RequestForm from './components/RequestForm';
@@ -23,38 +24,31 @@ function App() {
 
   const handleFormSubmit = (data) => {
     setFormData(data);
-    // Here we would normally make an API call
-    // For now, we'll simulate the response
-    simulateAPIResponse(data);
+    // Submit to Supabase database
+    submitRideRequest(data);
   };
 
-  const simulateAPIResponse = (data) => {
-    // Simulate different scenarios
-    const scenarios = [
-      {
-        type: 'immediate_match',
-        message: `Great news! You've been matched with John Doe (Contact: +91 98765 43210)`,
-        details: 'You can contact them directly to coordinate your ride.'
-      },
-      {
-        type: 'group_formed',
-        message: 'Congratulations! A group has been formed for your time slot:',
-        members: [
-          { name: 'Alice Smith', contact: '+91 98765 43211' },
-          { name: 'Bob Johnson', contact: '+91 98765 43212' },
-          { name: 'Carol Davis', contact: '+91 98765 43213' }
-        ]
-      },
-      {
-        type: 'waiting',
-        message: `Thank you, ${data.name}. Your request has been saved.`,
-        details: 'We will notify you once your group is formed or a match is found.'
-      }
-    ];
-
-    // Randomly select a scenario for demo purposes
-    const randomScenario = scenarios[Math.floor(Math.random() * scenarios.length)];
-    setStatusData(randomScenario);
+  const submitRideRequest = async (data) => {
+    try {
+      const rideData = {
+        direction: data.route,
+        timeSlot: data.timeSlot,
+        vehicleType: data.action.includes('cab') ? 'cab' : 'auto',
+        actionType: data.action.includes('offer') ? 'offer' : 'request',
+        name: data.name,
+        contact: data.contact
+      };
+      
+      const result = await RideService.submitRide(rideData);
+      setStatusData(result);
+    } catch (error) {
+      console.error('Error submitting ride:', error);
+      setStatusData({
+        type: 'error',
+        message: 'Sorry, there was an error processing your request.',
+        details: 'Please try again later.'
+      });
+    }
     setCurrentStep('status');
   };
 
