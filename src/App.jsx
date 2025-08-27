@@ -24,7 +24,7 @@ function App() {
 
   const handleFormSubmit = (data) => {
     setFormData(data);
-    // Submit to Supabase database
+    // Submit to MongoDB via Flask API
     submitRideRequest(data);
   };
 
